@@ -1,0 +1,239 @@
+/* ===== order.css — 訂票頁面專用樣式，完全對齊設計稿 ===== */
+
+/********** 全域 **********/
+body {
+  background: #000;
+  color: #fff;
+}
+
+.order-page {
+  max-width: 1200px;
+}
+
+/* 主區塊間距 */
+.order-page > .row {
+  margin-bottom: 3.5rem;
+}
+
+/********** 標題 **********/
+.order-step,
+.order-subtitle {
+  font-weight: 700;
+  color: #fff !important;
+  text-shadow: 0 2px 8px #0003;
+}
+.order-step {
+  font-size: 2rem;
+  margin-bottom: 1.75rem;
+}
+.order-subtitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+/********** 座位圖 **********/
+.seat-map {
+  width: 260px;
+  background: #f7f7f7;
+  padding: 1.6rem 1rem 1.8rem;
+  margin: 0 auto 0.8rem auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.9rem;
+  box-shadow: 0 4px 28px #0006, 0 0 0 2px #fff3;
+  border-radius: 20px;
+}
+
+.stage {
+  background: linear-gradient(90deg, #ffa96a 40%, #ffd3a5 100%);
+  width: 170px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #000;
+  font-weight: 700;
+  border-radius: 8px;
+  font-size: 1.13rem;
+  letter-spacing: 0.08em;
+  box-shadow: 0 2px 12px #ffb47544;
+}
+
+.zone {
+  display: flex;
+  gap: 0.7rem;
+}
+.seat {
+  width: 54px;
+  height: 32px;
+  border: 2.5px solid #fff7;
+  border-radius: 8px;
+  font-size: 1.09rem;
+  font-weight: 600;
+  cursor: pointer;
+  color: #000;
+  box-shadow: 0 1.5px 8px #0002;
+  transition: box-shadow 0.16s, outline 0.13s;
+  background: #e9ecef;
+}
+.zone[data-zone="A"] .seat {
+  background: #9ce0ff;
+}
+.zone[data-zone="B"] .seat {
+  background: #9ff5d5;
+}
+.zone[data-zone="C"] .seat {
+  background: #ffa9e7;
+}
+.seat.active {
+  outline: 3.5px solid #c0322b;
+  box-shadow: 0 4px 15px #d2242435;
+}
+
+/********** 場次清單 **********/
+.showtime-list {
+  max-width: 320px;
+}
+.showtime-list .list-group-item {
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  color: #000;
+  cursor: pointer;
+  border-radius: 9px !important;
+  border: 1.5px solid #eee;
+  margin-bottom: 0.7rem;
+  font-size: 1.08rem;
+  font-weight: 500;
+  box-shadow: 0 2px 8px #0001;
+  transition: background 0.15s, color 0.15s;
+}
+.showtime-list .list-group-item + .list-group-item {
+  border-top: 1px solid #000;
+}
+.showtime-list .list-group-item.active {
+  background: #c0322b !important;
+  color: #fff !important;
+  border-color: #c0322b !important;
+  font-weight: bold;
+}
+
+/********** 票價表格 **********/
+.ticket-price-table {
+  max-width: 320px;
+}
+.ticket-price-table td {
+  height: 60px;
+  vertical-align: middle;
+  background: #fff;
+  color: #000;
+  border-color: #000;
+  font-size: 1.06rem;
+  font-weight: 500;
+  border-radius: 8px !important;
+  border: 1.5px solid #eee;
+}
+.ticket-price-table .zone-A {
+  background: #9ce0ff;
+  font-weight: bold;
+}
+.ticket-price-table .zone-B {
+  background: #9ff5d5;
+  font-weight: bold;
+}
+.ticket-price-table .zone-C {
+  background: #ffa9e7;
+  font-weight: bold;
+}
+
+/********** 加入訂單按鈕 **********/
+#addToCart {
+  display: block;
+  margin: 2.5rem 0 0 auto;
+  padding: 0.55rem 2.5rem;
+  background: #c0322b;
+  border-color: #c0322b;
+  border-radius: 10px !important;
+  font-size: 1.05rem;
+  font-weight: bold;
+  letter-spacing: 0.06em;
+  box-shadow: 0 2px 12px #d224243a;
+}
+#addToCart:hover {
+  background: #a82823;
+  border-color: #a82823;
+}
+
+/********** 訂單明細表格 **********/
+.order-summary .table-bordered td,
+.order-summary .table-bordered th {
+  border-color: #666;
+}
+.order-summary thead {
+  background: #333;
+}
+
+/********** 表單輸入 **********/
+.order-form .form-control {
+  background: transparent;
+  color: #fff;
+  border-color: #666;
+  border-radius: 0;
+}
+.order-form .form-control::placeholder {
+  color: #999;
+}
+
+/********** 表單按鈕 **********/
+.btn-danger {
+  background: #c0322b;
+  border-color: #c0322b;
+  border-radius: 0;
+}
+.btn-danger:hover {
+  background: #a82823;
+  border-color: #a82823;
+}
+
+.btn-outline-light {
+  color: #fff;
+  border-color: #fff;
+  border-radius: 0;
+}
+.btn-outline-light:hover {
+  background: #fff;
+  color: #000;
+}
+
+/********** 右側主卡片（透明背景） **********/
+.order-page .card.order-main-card {
+  background: transparent !important;
+  border-radius: 20px;
+  box-shadow: 0 4px 32px #0007;
+  border: none;
+}
+
+/* ================= 強制白底區字體顯示 ================= */
+.showtime-list .list-group-item,
+.ticket-price-table td,
+.ticket-price-table tr,
+.order-summary table td,
+.order-summary table th,
+.order-summary thead,
+.order-form .form-control,
+.order-form label,
+.order-main-card,
+.order-main-card * {
+  color: #000 !important;
+}
+.showtime-list .list-group-item.active {
+  color: #fff !important;
+}
+.order-summary thead th {
+  color: #fff !important;
+  background: #333 !important;
+}
+/* ========= END 強制字色 ========= */

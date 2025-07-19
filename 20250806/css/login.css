@@ -1,0 +1,164 @@
+/* ===== 登入頁專用樣式 ===== */
+
+/* 整體置中、寬度限制 */
+.auth-wrapper {
+  max-width: 520px;
+  width: 100%;
+  margin: 60px auto 100px;
+  padding: 0 20px;
+  text-align: center;
+}
+
+/* ---- Tabs ---- */
+.auth-toggle {
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+  margin-bottom: 32px;
+}
+.auth-toggle .tab {
+  padding: 10px 48px;
+  border-radius: 28px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+.auth-toggle .tab.active {
+  background: #c0322b;
+  color: #fff;
+}
+.auth-toggle .tab:not(.active) {
+  background: #d0d0d0;
+  color: #222;
+}
+.auth-toggle .tab:not(.active):hover {
+  background: #bdbdbd;
+}
+
+/* ---- 標題 ---- */
+.auth-title {
+  margin: 0 0 28px;
+  font-size: 2.2rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+/* ---- 表單 ---- */
+.auth-form label {
+  display: block;
+  text-align: left;
+  font-size: 0.92rem;
+  margin: 18px 0 6px;
+}
+.auth-form input {
+  width: 100%;
+  padding: 0.6rem 0.9rem;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  background: #fff;
+  color: #222 !important; /* 覆蓋 index.css 的全域白字 */
+  box-shadow: 0 1px 6px #0004;
+}
+.auth-form input:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px #c0322b;
+}
+
+/* ---- 按鈕 ---- */
+.auth-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 26px;
+  margin-top: 34px;
+}
+.btn-primary,
+.btn-outline {
+  font-size: 1rem;
+  padding: 0.62rem 3.6rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.btn-primary {
+  border: none;
+  background: #c0322b;
+  color: #fff;
+}
+.btn-primary:hover {
+  background: #d63a3a;
+}
+.btn-outline {
+  background: transparent;
+  border: 1.5px solid #fff;
+  color: #fff;
+  text-decoration: none;
+}
+.btn-outline:hover {
+  background: #fff;
+  color: #222;
+}
+
+/* ---- RWD: 小螢幕微調 ---- */
+@media (max-width: 500px) {
+  .auth-wrapper {
+    margin: 40px auto 60px;
+  }
+  .auth-toggle .tab {
+    padding: 10px 26px;
+    font-size: 0.95rem;
+  }
+  .auth-buttons {
+    flex-direction: column;
+    gap: 14px;
+  }
+  .btn-primary,
+  .btn-outline {
+    width: 100%;
+  }
+}
+
+/* ===== 會員註冊表單專用 ===== */
+
+/* 小副標 */
+.auth-subtitle {
+  font-size: 0.9rem;
+  margin-top: -14px;
+  margin-bottom: 26px;
+  opacity: 0.82;
+}
+
+/* 性別按鈕群 */
+.auth-gender {
+  display: flex;
+  gap: 12px;
+  margin: 8px 0 22px;
+}
+.auth-gender label {
+  cursor: pointer;
+}
+.auth-radio {
+  display: none; /* 隱藏原生 radio */
+}
+.auth-radio + span {
+  display: inline-block;
+  padding: 6px 28px;
+  border-radius: 4px;
+  background: #d0d0d0;
+  color: #222;
+  font-size: 0.95rem;
+  transition: background 0.15s, color 0.15s;
+}
+.auth-radio:checked + span {
+  background: #c0322b;
+  color: #fff;
+}
+
+/* 只有一顆按鈕時置中展開 */
+.auth-buttons.single {
+  justify-content: center;
+}
+.auth-buttons.single .btn-primary {
+  width: 220px; /* 依喜好調整 */
+}

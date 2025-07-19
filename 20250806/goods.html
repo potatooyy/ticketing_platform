@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <title>TixGo 商品列表</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- Bootstrap 5 CSS & Icons CDN (與 index.html 一致) -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
+      rel="stylesheet"
+    />
+
+    <!-- 先載入商品頁專用樣式，再載入首頁 index.css 以覆寫 Header / Footer，確保兩頁外觀一致 -->
+    <link rel="stylesheet" href="css/good.css" />
+    <link rel="stylesheet" href="css/index.css" />
+  </head>
+  <body>
+    <!-- Header (保持與 index.html 結構一致) -->
+    <header class="tixgo-header">
+      <div class="header-container">
+        <div class="header-logo">
+          <span class="dot"></span>
+          TixGo
+        </div>
+        <div class="header-right">
+          <nav class="nav-links">
+            <a href="index.html">首頁</a>
+            <a href="#" class="active">商品列表</a>
+          </nav>
+          <div class="header-icons">
+            <span title="會員中心"><i class="bi bi-person"></i></span>
+            <span title="購物車"><i class="bi bi-cart3"></i></span>
+          </div>
+          <form class="header-search" role="search">
+            <input type="text" placeholder="Search in site" />
+            <button type="submit"><i class="bi bi-search"></i></button>
+          </form>
+        </div>
+      </div>
+    </header>
+
+    <!-- 主視覺大圖 -->
+    <img
+      class="hero-img"
+      src="img/蔡依林 Ugly Beauty 2.0 世界巡演.jpg"
+      alt="主視覺"
+    />
+
+    <!-- Banner區塊 -->
+    <div class="banner-bar">
+      <div class="banner-title">獲取你的演唱會票！</div>
+      <div class="banner-desc">探索即將來臨的演唱會活動並搶先購票！</div>
+      <div class="banner-btns">
+        <a href="#" class="btn btn-outline-light">查看過去活動</a>
+        <a href="#" class="btn btn-danger">立即購票</a>
+      </div>
+    </div>
+
+    <!-- 卡片輪播 -->
+    <div class="cards-carousel-wrap">
+      <button class="carousel-arrow" id="prevCard">&#60;</button>
+      <div class="cards-wrap"></div>
+      <button class="carousel-arrow" id="nextCard">&#62;</button>
+    </div>
+
+    <!-- Footer (保持與 index.html 結構一致) -->
+    <footer>
+      <div class="footer-main">
+        <div class="row g-3 align-items-start">
+          <div class="col-12 col-md-3 footer-logo mb-3 mb-md-0">
+            <span class="fw-bold" style="font-size: 1.13rem">© 2025 TixGo</span>
+            <span class="ms-2 text-secondary" style="font-size: 0.97rem"
+              >版權所有</span
+            >
+          </div>
+          <div class="col-12 col-md-3">
+            <div class="footer-title">客服信箱</div>
+            <div class="footer-text">TixGo@gmail.com</div>
+            <div class="footer-text">
+              週一至五 9:00~12:00, 13:00~18:00<br /><span class="text-secondary"
+                >(假日休息)</span
+              >
+            </div>
+          </div>
+          <div class="col-12 col-md-3">
+            <div class="footer-title">服務專線</div>
+            <div class="footer-text">02-00000000</div>
+          </div>
+          <div class="col-12 col-md-3">
+            <div class="footer-title">系統專線</div>
+            <div class="footer-text">02-00000000</div>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <!--  卡片輪播腳本 -->
+    <script>
+      const allCards = [
+        {
+          img: "img/林俊傑 JJ20 演唱會.jpg",
+          title: "林俊傑 JJ20 演唱會",
+          date: "日期：2025-11-20",
+        },
+        {
+          img: "img/張惠妹 ASMR 演唱會.jpg",
+          title: "張惠妹 ASMR 演唱會",
+          date: "日期：2025-12-12",
+        },
+        {
+          img: "img/五月天 [回到那一天] 巡迴演唱會.jpg",
+          title: "五月天 [回到那一天] 巡迴演唱會",
+          date: "日期：2025-10-05",
+        },
+      ];
+      let start = 0;
+      function renderCards() {
+        const wrap = document.querySelector(".cards-wrap");
+        wrap.innerHTML = "";
+        for (let i = 0; i < 3; i++) {
+          const idx = (start + i) % allCards.length;
+          const c = allCards[idx];
+          wrap.innerHTML += `
+          <div class="card">
+            <img src="${c.img}" alt="${c.title}" />
+            <div class="card-body">
+              <div class="title">${c.title}</div>
+              <div class="date">${c.date}</div>
+            </div>
+          </div>`;
+        }
+      }
+      document.getElementById("prevCard").onclick = () => {
+        start = (start - 1 + allCards.length) % allCards.length;
+        renderCards();
+      };
+      document.getElementById("nextCard").onclick = () => {
+        start = (start + 1) % allCards.length;
+        renderCards();
+      };
+      renderCards();
+    </script>
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>
