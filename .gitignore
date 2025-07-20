@@ -1,0 +1,16 @@
+.venv/
+env/
+venv/
+
+.env
+*.env
+
+.python-version
+
+# Python
+*.pyc
+*.pyo
+__pycache__/
+
+.vscode/
+Thumbs.db
