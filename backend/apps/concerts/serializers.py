@@ -49,13 +49,13 @@ class SimpleVenueSerializer(serializers.ModelSerializer):
 class PricingSerializer(serializers.ModelSerializer):
     concert = SimpleConcertSerializer(read_only=True)
     venue = SimpleVenueSerializer(read_only=True)
-    concert_id = serializers.PrimaryKeyRelatedField(
-        queryset=Concert.objects.all(), source='concert', write_only=True
+    show_id = serializers.PrimaryKeyRelatedField(
+        queryset=Show.objects.all(), source='show', write_only=True
     )
 
     class Meta:
         model = Pricing
-        fields = ['id', 'concert', 'concert_id', 'venue','section', 'price']
+        fields = ['id', 'concert', 'show_id', 'venue','section', 'price']
 
 class TicketSerializer(serializers.ModelSerializer):
     show = ShowSerializer(read_only=True)

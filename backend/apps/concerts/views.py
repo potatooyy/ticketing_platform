@@ -29,6 +29,15 @@ class VenueSeatMapViewSet(viewsets.ModelViewSet):
     serializer_class = VenueSeatMapSerializer
     permission_classes = [AllowAny]
 
+    def create(self, request, *args, **kwargs):
+        is_many = isinstance(request.data, list)
+        
+        serializer = self.get_serializer(data=request.data, many=is_many)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
 class ShowViewSet(viewsets.ModelViewSet):
     queryset = Show.objects.all()
     serializer_class = ShowSerializer
@@ -39,10 +48,28 @@ class PricingViewSet(viewsets.ModelViewSet):
     serializer_class = PricingSerializer
     permission_classes = [AllowAny]
 
+    def create(self, request, *args, **kwargs):
+        is_many = isinstance(request.data, list)
+        
+        serializer = self.get_serializer(data=request.data, many=is_many)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
 class TicketViewSet(viewsets.ModelViewSet):
     queryset = Ticket.objects.all()
     serializer_class = TicketSerializer
     permission_classes = [AllowAny]
+
+    def create(self, request, *args, **kwargs):
+        is_many = isinstance(request.data, list)
+        
+        serializer = self.get_serializer(data=request.data, many=is_many)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def get_queryset(self):
         qs = super().get_queryset()

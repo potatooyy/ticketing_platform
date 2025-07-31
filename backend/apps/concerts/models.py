@@ -35,7 +35,7 @@ class Show(models.Model):
     show_time = models.TimeField()
     
     def __str__(self):
-        return f"({self.concert.title} @ {self.show_date} {self.show_time}"
+        return f"{self.concert.title} @ {self.show_date} {self.show_time}"
 
 class Pricing(models.Model):
     show = models.ForeignKey(Show, on_delete=models.CASCADE, related_name='pricings')
