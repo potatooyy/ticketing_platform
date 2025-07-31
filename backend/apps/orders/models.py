@@ -1,4 +1,4 @@
-# apps/orders/modles.py
+# apps/orders/models.py
 from django.db import models
 from django.conf import settings
 import uuid
