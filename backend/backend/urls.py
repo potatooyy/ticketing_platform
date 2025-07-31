@@ -14,7 +14,7 @@ from apps.users.views import *
 from apps.concerts.views import *
 from apps.orders.views import *
 
-router = DefaultRouter()
+router = DefaultRouter(trailing_slash=False)
 router.register(r'users', UserViewSet, basename = 'user')
 router.register(r'venues', VenueViewSet)
 router.register(r'seats', VenueSeatMapViewSet)
