@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'apps.users',
     'apps.concerts',
+    'apps.orders',
 ]
 
 MIDDLEWARE = [
@@ -146,6 +147,9 @@ SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=300),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1)
 }
+
+MEDIA_ROOT = 'media'  # 定義媒體文件的根目錄
+MEDIA_URL = '/media/'  # 媒體文件的訪問 URL 前綴
 
 # CORS_ALLOWED_ORIGINS = [
 #     "http://localhost:3000",
