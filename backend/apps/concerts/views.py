@@ -15,11 +15,16 @@ from .serializers import (
     PricingSerializer,
     TicketSerializer
 )
-
+class ConcertFilter(filter.FilterSet):
+    class Meta:
+        model = Concert
+        fields = ['id', 'title', 'artist',]
 class ConcertViewSet(viewsets.ModelViewSet):
     queryset = Concert.objects.all()
     serializer_class = ConcertSerializer
     permission_classes = [AllowAny]
+    ilter_backends = [DjangoFilterBackend]      
+    filterset_class = ConcertFilter
 
 class VenueViewSet(viewsets.ModelViewSet):
     queryset = Venue.objects.all()
@@ -90,7 +95,7 @@ class TicketFilter(filter.FilterSet):
 
     class Meta:
         model = Ticket
-        fields = ['status', 'show', 'seat', 'price', 'order']
+        fields = ['id', 'status', 'show', 'seat', 'price', 'order']
         # fields = []
 
 
