@@ -1,95 +1,53 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+// src\app\page.js
+'use client'
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { concertsData } from '@/data/concerts'
 
-export default function Home() {
+export default function HomePage() {
+  const [currentSlide, setCurrentSlide] = useState(0)
+  const router = useRouter()
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentSlide(prev => (prev + 1) % concertsData.length)
+    }, 4000)
+    return () => clearInterval(timer)
+  }, [])
+
+  const goToSlide = idx => setCurrentSlide(idx)
+  const prevSlide = () => setCurrentSlide(s => (s - 1 + concertsData.length) % concertsData.length)
+  const nextSlide = () => setCurrentSlide(s => (s + 1) % concertsData.length)
+  const handleCardClick = concert => router.push(`/booking/${concert.id}`)
+
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol>
-          <li>
-            Get started by editing <code>src/app/page.js</code>.
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
-
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.secondary}
-          >
-            Read our docs
-          </a>
+    <main className="homepage-main-container">
+      <section className="carousel-wrap">
+        <button className="carousel-btn prev" onClick={prevSlide} aria-label="上一張輪播">&#8592;</button>
+        <button className="carousel-btn next" onClick={nextSlide} aria-label="下一張輪播">&#8594;</button>
+        {concertsData.map((concert, idx) => (
+          <div key={concert.id} className={`carousel-slide${idx === currentSlide ? ' active' : ''}`}>
+            <img src={concert.image} alt={concert.title} draggable={false} loading="lazy" />
+          </div>
+        ))}
+        <div className="carousel-controls">
+          {concertsData.map((_, idx) => (
+            <span key={idx} className={`carousel-dot${idx === currentSlide ? ' active' : ''}`} onClick={() => goToSlide(idx)} tabIndex={0} />
+          ))}
         </div>
-      </main>
-      <footer className={styles.footer}>
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
+      </section>
+      <aside className="cards-wrap">
+        {concertsData.map(concert => (
+          <div className="card" key={concert.id} tabIndex={0} onClick={() => handleCardClick(concert)}
+            onKeyDown={e => e.key === 'Enter' && handleCardClick(concert)}>
+            <img src={concert.image} alt={concert.title} draggable={false} loading="lazy" />
+            <div className="card-body">
+              <div className="title">{concert.title}</div>
+              <div className="date">日期：{concert.date}</div>
+            </div>
+          </div>
+        ))}
+      </aside>
+    </main>
+  )
 }
