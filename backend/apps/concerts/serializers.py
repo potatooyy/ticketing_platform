@@ -50,7 +50,7 @@ class PricingSerializer(serializers.ModelSerializer):
     concert = SimpleConcertSerializer(read_only=True)
     venue = SimpleVenueSerializer(read_only=True)
     show_id = serializers.PrimaryKeyRelatedField(
-        queryset=Show.objects.all(), source='show', write_only=True
+        queryset=Show.objects.all(), source='show'
     )
 
     class Meta:
