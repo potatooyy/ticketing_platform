@@ -45,10 +45,25 @@ class VenueSeatMapViewSet(viewsets.ModelViewSet):
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
+class ShowFilter(filter.FilterSet):
+    show_date_before = filter.DateFilter(field_name='show_date', lookup_expr='lte')
+    show_date_after = filter.DateFilter(field_name='show_date', lookup_expr='gte')
+
+    class Meta:
+        model = Show
+        fields = [
+            'concert',        # 精確過濾 concert id
+            'venue',          # 精確過濾 venue id
+            'show_date',
+            'show_time',
+        ]
+
 class ShowViewSet(viewsets.ModelViewSet):
     queryset = Show.objects.all()
     serializer_class = ShowSerializer
     permission_classes = [AllowAny]
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = ShowFilter
 
 class PricingViewSet(viewsets.ModelViewSet):
     queryset = Pricing.objects.all()
