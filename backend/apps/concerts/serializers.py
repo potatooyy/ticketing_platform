@@ -52,10 +52,13 @@ class PricingSerializer(serializers.ModelSerializer):
     show_id = serializers.PrimaryKeyRelatedField(
         queryset=Show.objects.all(), source='show'
     )
+    show_date = serializers.DateField(
+        source='show.show_date', read_only=True
+    )
 
     class Meta:
         model = Pricing
-        fields = ['id', 'concert', 'show_id', 'venue','section', 'price']
+        fields = ['id', 'concert', 'show_id', 'show_date', 'venue','section', 'price']
 
 class TicketSerializer(serializers.ModelSerializer):
     show = ShowSerializer(read_only=True)
@@ -123,3 +126,5 @@ class TicketSerializer(serializers.ModelSerializer):
     #       validated_data['status'] = 'reserved'
     #       validated_data['reserved_until'] = timezone.now() + timezone.timedelta(seconds=60)
     #       return super().create(validated_data)
+
+
