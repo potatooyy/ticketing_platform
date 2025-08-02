@@ -65,10 +65,17 @@ class ShowViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend]
     filterset_class = ShowFilter
 
+class PricingFilter(filter.FilterSet):
+    class Meta:
+        model = Pricing
+        fields = ['show_id',]
+
 class PricingViewSet(viewsets.ModelViewSet):
     queryset = Pricing.objects.all()
     serializer_class = PricingSerializer
     permission_classes = [AllowAny]
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = PricingFilter
 
     def create(self, request, *args, **kwargs):
         is_many = isinstance(request.data, list)
