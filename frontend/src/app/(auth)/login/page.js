@@ -1,4 +1,3 @@
-// src/app/auth/login/page.js
 'use client'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -6,7 +5,8 @@ import Link from 'next/link'
 import { useAuth } from '@/hooks/useAuth'
 
 export default function LoginPage() {
-  const [formData, setFormData] = useState({ email: '', password: '' })
+  // 前端狀態維持 username, password
+  const [formData, setFormData] = useState({ username: '', password: '' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const { login } = useAuth()
@@ -21,7 +21,13 @@ export default function LoginPage() {
     e.preventDefault()
     setLoading(true)
     setError('')
-    const result = await login(formData)
+
+    // login 時以 username 傳遞
+    const result = await login({ 
+      username: formData.username, 
+      password: formData.password 
+    })
+
     if (result.success) {
       const redirectPath = sessionStorage.getItem('redirect_after_login')
       if (redirectPath) {
@@ -45,15 +51,35 @@ export default function LoginPage() {
       <h2 className="auth-title">登入</h2>
       <form className="auth-form" onSubmit={handleSubmit} noValidate>
         {error && <div className="alert alert-danger" role="alert">{error}</div>}
-        <label htmlFor="email">電子郵件</label>
-        <input id="email" name="email" type="email" placeholder="請輸入您的電子郵件"
-          value={formData.email} onChange={handleChange} required autoComplete="email" />
+        <label htmlFor="username">帳號</label>
+        <input
+          id="username"
+          name="username"
+          type="text"
+          placeholder="請輸入您的帳號"
+          value={formData.username}
+          onChange={handleChange}
+          required
+          autoComplete="username"
+        />
+
         <label htmlFor="password">密碼</label>
-        <input id="password" name="password" type="password" placeholder="請輸入您的密碼"
-          value={formData.password} onChange={handleChange} required autoComplete="current-password" />
+        <input
+          id="password"
+          name="password"
+          type="password"
+          placeholder="請輸入您的密碼"
+          value={formData.password}
+          onChange={handleChange}
+          required
+          autoComplete="current-password"
+        />
+
         <div className="auth-buttons">
           <Link href="/register" className="btn-outline">註冊新帳戶</Link>
-          <button type="submit" className="btn-primary" disabled={loading}>{loading ? '登入中...' : '登入'}</button>
+          <button type="submit" className="btn-primary" disabled={loading}>
+            {loading ? '登入中...' : '登入'}
+          </button>
         </div>
       </form>
     </main>

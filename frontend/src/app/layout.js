@@ -6,24 +6,6 @@ import Footer from '@/components/layout/Footer'
 import { AuthProvider } from '@/hooks/useAuth'
 import { CartProvider } from '@/hooks/useCart'
 
-export const metadata = {
-  title: { template: '%s | TixGo - 演唱會購票系統', default: 'TixGo - 專業演唱會購票平台' },
-  description: '台灣領先的演唱會購票平台，提供周杰倫、五月天、BLACKPINK等熱門藝人演唱會購票服務',
-  metadataBase: new URL('http://localhost:3000'),
-  openGraph: { title: 'TixGo - 專業演唱會購票平台', description: '台灣領先的演唱會購票平台', type: 'website', locale: 'zh_TW' },
-  twitter: { card: 'summary_large_image', title: 'TixGo - 專業演唱會購票平台', description: '台灣領先的演唱會購票平台' },
-  keywords: ['演唱會', '購票', 'TixGo', '票券系統'],
-  authors: [{ name: 'TixGo Team' }],
-  category: 'Entertainment',
-}
-export const viewport = {
-  width: 'device-width',
-  initialScale: 1,
-  maximumScale: 5,
-  userScalable: true,
-  themeColor: '#c0322b',
-}
-
 export default function RootLayout({ children }) {
   return (
     <html lang="zh-Hant" className="h-100">

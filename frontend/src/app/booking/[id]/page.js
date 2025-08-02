@@ -1,131 +1,139 @@
-// src/app/booking/[id]/page.js
 'use client'
+
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useParams } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
-import { getConcertById } from '@/data/concerts'
+import api from '@/utils/api'
 import SeatMap from '@/components/booking/SeatMap'
 import PriceTable from '@/components/booking/PriceTable'
 
-export default function BookingPage({ params }) {
-  const { id } = params
-
-  const [concert, setConcert] = useState(null)
-  const [selectedSeat, setSelectedSeat] = useState(null)
-  const [selectedShow, setSelectedShow] = useState(null)
-  const [orderItems, setOrderItems] = useState([])
-  const [customerInfo, setCustomerInfo] = useState({ name: '', email: '' })
-  const { user, loading: authLoading } = useAuth()
+export default function BookingPage() {
+  const params = useParams()
+  const showId = params?.id
   const router = useRouter()
+  const { user, loading: authLoading } = useAuth()
 
-  // 載入演唱會資料
+  const [show, setShow] = useState(null)     // 從 /api/shows/{id} 取得演出細節(可用可不使用)
+  const [pricings, setPricings] = useState([]) // 票價資訊
+  const [tickets, setTickets] = useState([])   // 票券(座位)資訊
+  const [selectedSeat, setSelectedSeat] = useState(null) // 選中票 id
+  const [orderItems, setOrderItems] = useState([])       // 訂單明細
+
+  // 取得演出細節
   useEffect(() => {
-    const concertData = getConcertById(id)
-    if (!concertData) {
-      router.push('/concerts')
-      return
+    if (!showId) return
+    async function fetchShow() {
+      try {
+        const res = await api.get(`/shows/${showId}`)
+        setShow(res.data)
+      } catch {
+        router.push('/concerts') // 找不到show跳轉
+      }
     }
-    setConcert(concertData)
-  }, [id, router])
+    fetchShow()
+  }, [showId, router])
 
-  // 預設第一場場次（有多場可以改成需求）
+  // 取得票價資訊
   useEffect(() => {
-    if (concert && concert.shows?.length > 0 && selectedShow === null) {
-      setSelectedShow(concert.shows[0].id)
+    if (!showId) return
+    async function fetchPricings() {
+      try {
+        const res = await api.get(`/pricings?show_id=${showId}`)
+        setPricings(res.data)
+      } catch {
+        setPricings([])
+      }
     }
-  }, [concert, selectedShow])
+    fetchPricings()
+  }, [showId])
 
-  // 身份驗證跳轉
+  // 取得票券並攤平 seat 物件
+  useEffect(() => {
+    if (!showId) return
+    async function fetchTickets() {
+      try {
+        const res = await api.get(`/tickets?show=${showId}`)
+        // 攤平成扁平物件，方便後續存取
+        const normalizedTickets = res.data.map(ticket => ({
+          ...ticket,
+          section: ticket.seat?.section || '未分區',
+          seat_number: ticket.seat?.seat_number || '無座位號',
+          price: ticket.price, // 如需價錢用此或用 pricings 配對
+        }))
+        setTickets(normalizedTickets)
+      } catch {
+        setTickets([])
+      }
+    }
+    fetchTickets()
+  }, [showId])
+
+  // 權限檢查，未登入跳登入頁
   useEffect(() => {
     if (!authLoading && !user) {
-      router.push('/login')  // 請確認路由設定正確
+      router.push('/login')
     }
-  }, [user, authLoading, router])
+  }, [authLoading, user, router])
 
-  // 加入訂單
+  // 加入訂單按鈕動作
   const handleAddToOrder = () => {
-    if (!selectedSeat || !selectedShow) {
-      alert('請先選擇場次與座位！')
+    if (!selectedSeat) {
+      alert('請選擇座位')
       return
     }
-
-    const zone = selectedSeat.charAt(0)
-    const price = concert.pricing[zone] ?? 0
-    const newItem = {
-      id: `${selectedShow}-${selectedSeat}`,
-      show: selectedShow,
-      seat: selectedSeat,
-      price
+    const ticket = tickets.find(t => t.id === selectedSeat)
+    if (!ticket) {
+      alert('座位資料有誤')
+      return
     }
-
-    if (orderItems.some(item => item.id === newItem.id)) {
+    if (orderItems.some(item => item.ticketId === ticket.id)) {
       alert('該座位已加入訂單！')
       return
     }
 
-    setOrderItems([...orderItems, newItem])
-    setSelectedSeat(null) // 加入成功後清空
+    // 以票價API價格優先，找不到再用 ticket 自帶 price
+    const priceFromPricing = pricings.find(p => p.section === ticket.section)?.price
+    const price = typeof priceFromPricing === 'number' ? priceFromPricing : (ticket.price || 0)
+
+    setOrderItems([...orderItems, {
+      ticketId: ticket.id,
+      section: ticket.section,
+      seatNumber: ticket.seat_number,
+      price,
+    }])
+    setSelectedSeat(null)
   }
 
-  // 提交訂單
-  const handleSubmitOrder = (e) => {
-    e.preventDefault()
-    if (orderItems.length === 0) {
-      alert('請先將座位加入訂單！')
-      return
-    }
-    if (!customerInfo.name || !customerInfo.email) {
-      alert('請填寫姓名和電子郵件！')
-      return
-    }
-    alert('訂單已送出，感謝您的購買！')
-    router.push('/tickets')
-  }
+  // 計算總價用
+  const totalPrice = orderItems.reduce((sum, item) => sum + item.price, 0)
 
-  if (!concert || authLoading) {
+  // 等待資料與認證
+  if (authLoading || !show || !pricings.length || !tickets.length) {
     return <div className="text-center py-5">載入中...</div>
   }
-
-  const totalPrice = orderItems.reduce((sum, item) => sum + item.price, 0)
 
   return (
     <main className="container-xxl order-page py-4 py-lg-5 flex-grow-1" style={{ minHeight: '640px' }}>
       <div className="row g-5 align-items-stretch">
-        {/* 左: 選座位 */}
+        {/* 左側: 選座位 */}
         <section className="col-lg-6 d-flex flex-column justify-content-center align-items-center h-100">
           <div className="w-100 h-100 d-flex flex-column justify-content-center">
             <h2 className="order-step mb-4">1. 選擇座位</h2>
             <div className="flex-grow-1 d-flex flex-column justify-content-center">
-              <SeatMap concert={concert} selectedSeat={selectedSeat} onSeatSelect={setSelectedSeat} />
+              <SeatMap
+                tickets={tickets}
+                selectedSeat={selectedSeat}
+                onSeatSelect={setSelectedSeat}
+              />
             </div>
           </div>
         </section>
 
-        {/* 右: 選擇場次與加入訂單 */}
+        {/* 右側: 票價資訊與加入訂單 */}
         <section className="col-lg-6 d-flex flex-column justify-content-center align-items-center h-100">
           <div className="order-main-card card p-4 rounded-4 shadow-lg border-0 w-100 h-100 d-flex flex-column">
-            <h2 className="order-step mb-4">2. 選擇場次</h2>
-
-            <div className="showtime-list mb-4">
-              {concert.shows?.map((show) => (
-                <div
-                  key={show.id}
-                  className={`list-group-item ${selectedShow === show.id ? 'active' : ''}`}
-                  onClick={() => setSelectedShow(show.id)}
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') setSelectedShow(show.id)
-                  }}
-                >
-                  {show.date.replace(/(\d{4})-(\d{2})-(\d{2})/, '$1/$2/$3')}
-                </div>
-              ))}
-            </div>
-
-            <h3 className="order-subtitle mb-3">票價資訊</h3>
-            <PriceTable pricing={concert.pricing} />
-
+            <h2 className="order-step mb-4">2. 票價資訊</h2>
+            <PriceTable prices={pricings} />
             <button
               className="btn btn-danger px-5 mt-auto align-self-start"
               onClick={handleAddToOrder}
@@ -137,83 +145,42 @@ export default function BookingPage({ params }) {
         </section>
       </div>
 
-      {/* 填寫訂購資訊 */}
+      {/* 訂單明細 */}
       <div className="row g-5 mt-5 align-items-start">
         <section className="col-lg-4">
-          <h2 className="order-step mb-2">填寫訂購資訊</h2>
-          <p className="text-secondary small mb-4">請填寫以下資訊以便完成訂購。</p>
+          <h2 className="order-step mb-2">訂單明細</h2>
+          <p className="text-secondary small mb-4">請確認您的選擇</p>
         </section>
         <section className="col-lg-8">
-          <form className="order-form" onSubmit={handleSubmitOrder}>
-            {/* <div className="mb-3">
-              <label htmlFor="name" className="form-label">姓名</label>
-              <input
-                type="text"
-                className="form-control"
-                id="name"
-                value={customerInfo.name}
-                onChange={(e) => setCustomerInfo({ ...customerInfo, name: e.target.value })}
-                required
-              />
-            </div> */}
-            {/* <div className="mb-4">
-              <label htmlFor="email" className="form-label">電子郵件</label>
-              <input
-                type="email"
-                className="form-control"
-                id="email"
-                value={customerInfo.email}
-                onChange={(e) => setCustomerInfo({ ...customerInfo, email: e.target.value })}
-                required
-              />
-            </div> */}
-            <div className="order-summary mb-4">
-              <h4 className="small fw-bold mb-2">訂單明細</h4>
-              <div className="table-responsive">
-                <table className="table table-sm table-bordered text-center mb-0">
-                  <thead className="table-light text-dark">
-                    <tr>
-                      <th>場次</th>
-                      <th>座位</th>
-                      <th>價格</th>
+          <div className="order-summary mb-4">
+            <h4 className="small fw-bold mb-2">訂單明細</h4>
+            <div className="table-responsive">
+              <table className="table table-sm table-bordered text-center mb-0">
+                <thead className="table-light text-dark">
+                  <tr>
+                    <th>座位區</th>
+                    <th>座位號</th>
+                    <th>價格</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {orderItems.map(item => (
+                    <tr key={item.ticketId}>
+                      <td>{item.section}</td>
+                      <td>{item.seatNumber}</td>
+                      <td>${item.price}</td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    {orderItems.map((item) => (
-                      <tr key={item.id}>
-                        <td>{item.show.replace(/(\d{4})(\d{2})(\d{2})/, '$1/$2/$3')}</td>
-                        <td>{item.seat}</td>
-                        <td>$ {item.price}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                  <tfoot>
-                    <tr>
-                      <th colSpan="2" className="text-end">總價</th>
-                      <th>$ {totalPrice}</th>
-                    </tr>
-                  </tfoot>
-                </table>
-              </div>
+                  ))}
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <th colSpan="2" className="text-end">總價</th>
+                    <th>${totalPrice}</th>
+                  </tr>
+                </tfoot>
+              </table>
             </div>
-            <div className="d-flex gap-3">
-              <button
-                type="button"
-                className="btn btn-outline-light flex-grow-1"
-                onClick={() => {
-                  setOrderItems([])
-                  setCustomerInfo({ name: '', email: '' })
-                  setSelectedSeat(null)
-                  setSelectedShow(null)
-                }}
-              >
-                取消
-              </button>
-              <button type="submit" className="btn btn-danger flex-grow-1">
-                確認訂單
-              </button>
-            </div>
-          </form>
+          </div>
         </section>
       </div>
     </main>
