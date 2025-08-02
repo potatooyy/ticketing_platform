@@ -30,10 +30,10 @@ export default function Header() {
     setMenuOpen(false) // 關閉選單
   }
 
-const handleCartClick = () => {
-  router.push('/cart')
-  setMenuOpen(false)
-}
+  const handleCartClick = () => {
+    router.push('/cart')
+    setMenuOpen(false)
+  }
 
 
   const handleLogout = () => {
@@ -137,6 +137,22 @@ const handleCartClick = () => {
                 <i className="bi bi-box-arrow-right" aria-hidden="true"></i>
               </div>
             )}
+            {/* 管理後台按鈕（不做登入判斷，永遠顯示） */}
+            <div
+              className="icon-btn"
+              title="管理後台"
+              onClick={() => window.location.href = 'http://127.0.0.1:8000/admin'}
+              onKeyDown={e => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  window.location.href = 'http://127.0.0.1:8000/admin'
+                }
+              }}
+              role="button"
+              tabIndex={0}
+              aria-label="管理後台"
+            >
+              <i className="bi bi-gear" aria-hidden="true"></i>
+            </div>
           </div>
 
           {/* 搜尋表單 */}
