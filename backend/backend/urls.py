@@ -13,6 +13,7 @@ from rest_framework_simplejwt.views import (
 from apps.users.views import *
 from apps.concerts.views import *
 from apps.orders.views import *
+from apps.payments.views import CreatePaymentView
 
 router = DefaultRouter(trailing_slash=False)
 router.register(r'users', UserViewSet, basename = 'user')
@@ -31,6 +32,8 @@ urlpatterns = [
     path('api/', include(router.urls)),
     path('api/token', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh', TokenRefreshView.as_view(), name='token_refresh'),
+    path('api/payments/', include('apps.payments.urls')),
+
 ]
 
 if settings.DEBUG:

@@ -10,11 +10,11 @@ export default function CartPage() {
   const [loading, setLoading] = useState(true)
   const [paying, setPaying] = useState(false)
   const [error, setError] = useState(null)
-  const [editOrderId, setEditOrderId] = useState(null) // 進行編輯的訂單ID
+  const [editOrderId, setEditOrderId] = useState(null)
   const [editSection, setEditSection] = useState('')
   const [editSeat, setEditSeat] = useState('')
 
-  // 取得目前用戶訂單
+  // 取得用戶訂單
   const fetchUserOrders = async () => {
     setLoading(true)
     setError(null)
@@ -31,6 +31,7 @@ export default function CartPage() {
 
   useEffect(() => {
     fetchUserOrders()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // 刪除/取消訂單
@@ -52,12 +53,10 @@ export default function CartPage() {
     setEditSeat(order.ticket_info.seat)
   }
 
-  // 送出編輯
+  // 儲存編輯
   const handleSaveEdit = async (order) => {
     try {
-      // 只演示 PATCH 指定欄位
-      await api.patch(`/orders/${order.id}`, {
-        // 視API設計填入變動欄位
+      await api.patch(`/orders/${order.id}/`, {
         ticket_info: {
           ...order.ticket_info,
           section: editSection,
@@ -72,33 +71,40 @@ export default function CartPage() {
     }
   }
 
-  // 清空order
-  const clearCartAfterOrder = async () => {
-    // 假設：後端付款成功callback會自動移除已付款訂單
-    // 此處只會觸發付款，無清本地 useCart 狀態
-    await fetchUserOrders()
-  }
+  // == 新增：計算全部訂單總金額及商品名稱動態傳入 API ==
+  const totalAmount = orders.reduce((sum, o) => sum + (o.total_amount ?? 0), 0)
+  const itemName = orders.map(o => o.ticket_info?.show_title || '票券').join('|')
 
-  // 綠界付款串接
+  // 前往付款：送出目前所有未付款訂單資料
   const handlePay = async () => {
+    if (totalAmount <= 0) {
+      alert('購物車沒有有效訂單！')
+      return
+    }
     setPaying(true)
+    setError(null)
     try {
-      // 將所有尚未付款訂單 id 傳後端
       const unpaidOrderIds = orders.filter(o => o.status === 'pending').map(o => o.id)
       if (unpaidOrderIds.length === 0) {
         alert('沒有可付款的訂單')
         setPaying(false)
         return
       }
-      const res = await api.post('/payments/create', {
-        order_ids: unpaidOrderIds
+      const res = await api.post('/payments/create/', {
+        // ---- 關鍵：用前端動態傳入的總金額、名稱 ----
+        amount: totalAmount,
+        item_name: itemName,
+        // optional: order_ids: unpaidOrderIds
       })
-      if (res.data && res.data.payment_url) {
-        // 跳轉綠界
-        clearCartAfterOrder()
+      if (res.data && res.data.form_html) {
+        const div = document.createElement('div')
+        div.innerHTML = res.data.form_html
+        document.body.appendChild(div)
+        div.querySelector('form').submit()
+      } else if (res.data && res.data.payment_url) {
         window.location.href = res.data.payment_url
       } else {
-        alert('無法產生付款連結')
+        alert('無法產生付款頁面')
       }
     } catch {
       alert('付款請求失敗')
@@ -117,17 +123,18 @@ export default function CartPage() {
         <h1 className="text-4xl font-extrabold mb-8 text-white text-center tracking-tight">🛒 我的購物車</h1>
         <ul className="space-y-6">
           {orders.map(order => (
-            <li
-              key={order.id}
-              className="p-5 bg-white/10 border border-white/20 rounded-xl shadow-md text-white flex flex-col gap-2"
-            >
+            <li key={order.id}
+              className="p-5 bg-white/10 border border-white/20 rounded-xl shadow-md text-white flex flex-col gap-2">
               <div className="flex justify-between items-start">
                 <div>
                   <p className="mb-1 text-xl font-bold">訂單號: {order.order_number}</p>
-                  <p className="mb-1">狀態: <span className={order.status === 'paid' ? 'text-green-300' : 'text-yellow-300'}>{order.status}</span></p>
+                  <p className="mb-1">
+                    狀態: <span className={order.status === 'paid' ? 'text-green-300' : 'text-yellow-300'}>
+                        {order.status}
+                      </span>
+                  </p>
                   <p className="mb-1">總金額: NT${order.total_amount}</p>
                 </div>
-                {/* 刪除/取消 */}
                 {order.status !== 'paid' && (
                   <button
                     onClick={() => handleCancelOrder(order.id)}
@@ -148,7 +155,6 @@ export default function CartPage() {
                     ) : (
                       <p>無票券明細</p>
                     )}
-                    {/* 編輯按鈕 */}
                     {order.status !== 'paid' &&
                       <button
                         className="mt-2 px-3 py-1 rounded bg-yellow-500 text-black hover:bg-yellow-600"
@@ -181,7 +187,6 @@ export default function CartPage() {
             </li>
           ))}
         </ul>
-        {/* 付款按鈕 */}
         <button
           disabled={paying || orders.filter(o => o.status === 'pending').length === 0}
           onClick={handlePay}
@@ -189,6 +194,10 @@ export default function CartPage() {
         >
           {paying ? '建立付款連結中...' : '前往付款 (綠界)'}
         </button>
+        {/* 總計區塊 */}
+        <div className="mt-6 p-4 bg-white/20 rounded-lg text-white font-semibold text-xl text-right">
+          總計金額：NT$ {totalAmount}
+        </div>
       </div>
     </main>
   )

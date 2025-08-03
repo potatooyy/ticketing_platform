@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'apps.users',
     'apps.concerts',
     'apps.orders',
+    'apps.payments',  # 確保 payments 應用已經添加到 INSTALLED_APPS
 ]
 
 MIDDLEWARE = [
