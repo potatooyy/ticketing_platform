@@ -60,36 +60,28 @@ export default function BookingPage() {
   }, [showId])
 
   const addToOrder = () => {
-    if (!selectedTicketId) {
-      alert('請先選擇座位')
-      return
-    }
-    const ticket = tickets.find(t => t.id === selectedTicketId)
-    if (!ticket) {
-      alert('選擇的座位資料有誤')
-      return
-    }
-    if (orderItem && orderItem.ticketId === ticket.id) {
-      alert('此座位已加入訂單')
-      return
-    }
-    // 若已有未送出訂單，不能再加入新訂單，提醒用戶
-    if (orderItem) {
-      alert('請先送出目前訂單後，再加入新訂單')
-      return
-    }
-
-    const priceFromPricing = pricings.find(p => p.section === ticket.section)?.price
-    const price = typeof priceFromPricing === 'number' ? priceFromPricing : (ticket.price || 0)
-
-    setOrderItem({
-      ticketId: ticket.id,
-      section: ticket.section,
-      seatNumber: ticket.seat_number,
-      price,
-    })
-    setSelectedTicketId(null)
+  if (!selectedTicketId) {
+    alert('請先選擇座位')
+    return
   }
+  const ticket = tickets.find(t => t.id === selectedTicketId)
+  if (!ticket) {
+    alert('選擇的座位資料有誤')
+    return
+  }
+
+  const priceFromPricing = pricings.find(p => p.section === ticket.section)?.price
+  const price = typeof priceFromPricing === 'number' ? priceFromPricing : (ticket.price || 0)
+
+  // 直接覆蓋當前待送出訂單（不做拒絕）
+  setOrderItem({
+    ticketId: ticket.id,
+    section: ticket.section,
+    seatNumber: ticket.seat_number,
+    price,
+  })
+  setSelectedTicketId(null)
+}
 
   const submitOrderToBackend = async () => {
     if (!orderItem) {
