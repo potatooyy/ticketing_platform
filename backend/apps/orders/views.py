@@ -1,4 +1,7 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, status
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from django.db import transaction
 from .models import Order
 from .serializers import OrderCreateSerializer, UserOrderSerializer, AdminOrderSerializer
 # Create your views here.
@@ -17,6 +20,20 @@ class OrderViewSet(viewsets.ModelViewSet):
         if self.request.user.is_staff:
             return AdminOrderSerializer   # 管理員看用
         return UserOrderSerializer
+    
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+
+        with transaction.atomic():
+            # 取出該訂單所有票券
+            tickets = instance.tickets.all()
+            # 批次更新票券狀態為已釋放。例如 'available' 依照你系統定義的票券可售狀態調整
+            tickets.update(status='available', order=None)
+            # 刪除訂單
+            self.perform_destroy(instance)
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 
 class UserOrderViewSet(viewsets.ReadOnlyModelViewSet):
