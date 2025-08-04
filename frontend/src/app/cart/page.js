@@ -10,9 +10,6 @@ export default function CartPage() {
   const [loading, setLoading] = useState(true)
   const [paying, setPaying] = useState(false)
   const [error, setError] = useState(null)
-  const [editOrderId, setEditOrderId] = useState(null)
-  const [editSection, setEditSection] = useState('')
-  const [editSeat, setEditSeat] = useState('')
 
   // 取得用戶訂單
   const fetchUserOrders = async () => {
@@ -46,32 +43,7 @@ export default function CartPage() {
     }
   }
 
-  // 進入編輯狀態
-  const handleEditOrder = (order) => {
-    setEditOrderId(order.id)
-    setEditSection(order.ticket_info.section)
-    setEditSeat(order.ticket_info.seat)
-  }
-
-  // 儲存編輯
-  const handleSaveEdit = async (order) => {
-    try {
-      await api.patch(`/orders/${order.id}/`, {
-        ticket_info: {
-          ...order.ticket_info,
-          section: editSection,
-          seat: editSeat,
-        }
-      })
-      setEditOrderId(null)
-      await fetchUserOrders()
-      alert('編輯成功')
-    } catch {
-      alert('編輯失敗')
-    }
-  }
-
-  // == 新增：計算全部訂單總金額及商品名稱動態傳入 API ==
+  // == 計算全部訂單總金額及商品名稱動態傳入 API ==
   const totalAmount = orders.reduce((sum, o) => sum + (o.total_amount ?? 0), 0)
   const itemName = orders.map(o => o.ticket_info?.show_title || '票券').join('|')
 
@@ -91,7 +63,6 @@ export default function CartPage() {
         return
       }
       const res = await api.post('/payments/create/', {
-        // ---- 關鍵：用前端動態傳入的總金額、名稱 ----
         amount: totalAmount,
         item_name: itemName,
         // optional: order_ids: unpaidOrderIds
@@ -143,45 +114,15 @@ export default function CartPage() {
                 )}
               </div>
               <div>
-                {editOrderId !== order.id ? (
-                  <>
-                    <p className="underline mb-1 font-semibold">票券明細：</p>
-                    {order.ticket_info ? (
-                      <ul className='pl-2'>
-                        <li>
-                          演唱會: {order.ticket_info.show_title} | 區域: {order.ticket_info.section} | 座位: {order.ticket_info.seat} | 價格: NT${order.ticket_info.price}
-                        </li>
-                      </ul>
-                    ) : (
-                      <p>無票券明細</p>
-                    )}
-                    {order.status !== 'paid' &&
-                      <button
-                        className="mt-2 px-3 py-1 rounded bg-yellow-500 text-black hover:bg-yellow-600"
-                        onClick={() => handleEditOrder(order)}>
-                        編輯
-                      </button>
-                    }
-                  </>
+                <p className="underline mb-1 font-semibold">票券明細：</p>
+                {order.ticket_info ? (
+                  <ul className='pl-2'>
+                    <li>
+                      演唱會: {order.ticket_info.show_title} | 區域: {order.ticket_info.section} | 座位: {order.ticket_info.seat} | 價格: NT${order.ticket_info.price}
+                    </li>
+                  </ul>
                 ) : (
-                  <>
-                    <div className="flex items-center gap-2 mb-2">
-                      <label>區域:</label>
-                      <input className="px-1 py-0.5 rounded" value={editSection} onChange={e => setEditSection(e.target.value)} />
-                      <label>座位:</label>
-                      <input className="px-1 py-0.5 rounded" value={editSeat} onChange={e => setEditSeat(e.target.value)} />
-                      <button
-                        className="ml-2 px-2 py-1 rounded bg-green-600 text-white"
-                        onClick={() => handleSaveEdit(order)}>
-                        儲存
-                      </button>
-                      <button
-                        className="ml-1 px-2 py-1 rounded bg-gray-600 text-black"
-                        onClick={() => setEditOrderId(null)}>
-                        取消
-                      </button>
-                    </div>
-                  </>
+                  <p>無票券明細</p>
                 )}
               </div>
             </li>
