@@ -39,13 +39,14 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'drf_yasg',
     'corsheaders',
     'rest_framework_simplejwt',
     'django_filters',
     'apps.users',
     'apps.concerts',
     'apps.orders',
-    'apps.payments',  # 確保 payments 應用已經添加到 INSTALLED_APPS
+    'apps.payments', 
 ]
 
 MIDDLEWARE = [
