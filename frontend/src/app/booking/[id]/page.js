@@ -13,25 +13,20 @@ export default function BookingPage() {
   const router = useRouter()
   const { user, loading: authLoading } = useAuth()
 
-  // 從 API 取票券
   const [tickets, setTickets] = useState([])
-  // 從 API 取票價區
   const [pricings, setPricings] = useState([])
-  // 使用者選擇的票券ID
   const [selectedTicketId, setSelectedTicketId] = useState(null)
-  // 訂購明細
-  const [orderItems, setOrderItems] = useState([])
+  // 改成物件，唯一待送出訂單，null 代表無待送出訂單
+  const [orderItem, setOrderItem] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
-  // 權限檢查，未登入導向登入頁面
   useEffect(() => {
     if (!authLoading && !user) {
       router.push('/login')
     }
   }, [authLoading, user, router])
 
-  // 取得票券(座位)資訊，攤平成扁平物件方便操作
   useEffect(() => {
     if (!showId) return
     async function fetchTickets() {
@@ -51,7 +46,6 @@ export default function BookingPage() {
     fetchTickets()
   }, [showId])
 
-  // 取得票價資訊
   useEffect(() => {
     if (!showId) return
     async function fetchPricings() {
@@ -65,7 +59,6 @@ export default function BookingPage() {
     fetchPricings()
   }, [showId])
 
-  // 將選擇的座位加入訂單明細
   const addToOrder = () => {
     if (!selectedTicketId) {
       alert('請先選擇座位')
@@ -76,44 +69,44 @@ export default function BookingPage() {
       alert('選擇的座位資料有誤')
       return
     }
-    if (orderItems.some(item => item.ticketId === ticket.id)) {
+    if (orderItem && orderItem.ticketId === ticket.id) {
       alert('此座位已加入訂單')
       return
     }
-    // 找票價作為價格
+    // 若已有未送出訂單，不能再加入新訂單，提醒用戶
+    if (orderItem) {
+      alert('請先送出目前訂單後，再加入新訂單')
+      return
+    }
+
     const priceFromPricing = pricings.find(p => p.section === ticket.section)?.price
     const price = typeof priceFromPricing === 'number' ? priceFromPricing : (ticket.price || 0)
 
-    setOrderItems(prev => [
-      ...prev,
-      {
-        ticketId: ticket.id,
-        section: ticket.section,
-        seatNumber: ticket.seat_number,
-        price,
-      }
-    ])
+    setOrderItem({
+      ticketId: ticket.id,
+      section: ticket.section,
+      seatNumber: ticket.seat_number,
+      price,
+    })
     setSelectedTicketId(null)
   }
 
-  // 送出訂單到後端 API
   const submitOrderToBackend = async () => {
-    if (orderItems.length === 0) {
+    if (!orderItem) {
       alert('請先將座位加入訂單')
       return
     }
     setLoading(true)
     setError(null)
     try {
-      // API限制一訂單一票，故逐張票送
-      for (const item of orderItems) {
-        const payload = {
-          status: 'pending',
-          ticket_ids: [item.ticketId],
-        }
-        await api.post('/orders', payload)
+      const payload = {
+        status: 'pending',
+        ticket_ids: [orderItem.ticketId],
       }
-      alert('訂單成功送出，您可以至購物車查看')
+      await api.post('/orders', payload)
+      alert('訂單成功送出')
+      // 清空待送出訂單，允許用戶下一筆加入
+      setOrderItem(null)
       router.push('/cart')
     } catch (e) {
       setError('訂單送出失敗，請稍後重試')
@@ -123,7 +116,7 @@ export default function BookingPage() {
     }
   }
 
-  const totalPrice = orderItems.reduce((sum, item) => sum + item.price, 0)
+  const totalPrice = orderItem ? orderItem.price : 0
 
   if (authLoading) {
     return <div className="text-center py-5">載入中...</div>
@@ -132,6 +125,7 @@ export default function BookingPage() {
   return (
     <main className="container-xxl order-page py-4 py-lg-5 flex-grow-1" style={{ minHeight: '640px' }}>
       <div className="row g-5 align-items-stretch">
+
         {/* 左：選擇座位 */}
         <section className="col-lg-6 d-flex flex-column justify-content-center align-items-center h-100">
           <div className="w-100 h-100 d-flex flex-column justify-content-center">
@@ -145,6 +139,7 @@ export default function BookingPage() {
             </div>
           </div>
         </section>
+
         {/* 右：票價資訊與加入訂單 */}
         <section className="col-lg-6 d-flex flex-column justify-content-center align-items-center h-100">
           <div className="order-main-card card p-4 rounded-4 shadow-lg border-0 w-100 h-100 d-flex flex-column">
@@ -180,13 +175,17 @@ export default function BookingPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {orderItems.map(item => (
-                    <tr key={item.ticketId}>
-                      <td>{item.section}</td>
-                      <td>{item.seatNumber}</td>
-                      <td>${item.price}</td>
+                  {orderItem ? (
+                    <tr>
+                      <td>{orderItem.section}</td>
+                      <td>{orderItem.seatNumber}</td>
+                      <td>${orderItem.price}</td>
                     </tr>
-                  ))}
+                  ) : (
+                    <tr>
+                      <td colSpan="3">尚無訂單</td>
+                    </tr>
+                  )}
                 </tbody>
                 <tfoot>
                   <tr>
@@ -198,7 +197,7 @@ export default function BookingPage() {
             </div>
             <button
               className="btn btn-success mt-3"
-              disabled={loading || orderItems.length === 0}
+              disabled={loading || !orderItem}
               onClick={submitOrderToBackend}
               type="button"
             >
