@@ -1,93 +1,176 @@
-// // src/hooks/useAuth.js
 'use client'
 
-import { useState, useEffect, useCallback, createContext, useContext } from 'react'
+import { createContext, useContext, useReducer, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import api from '@/utils/api'
-import { logout as logoutUser } from '@/hooks/useAuthHelper'
 
-const AuthContext = createContext(null)
+// --- 初始化 Context 與 Reducer ---
+const AuthContext = createContext()
+
+const initialState = {
+  user: null,
+  isAuthenticated: false,
+  loading: true,
+  error: null
+}
+
+const authReducer = (state, action) => {
+  switch (action.type) {
+    case 'LOGIN_SUCCESS':
+      return { ...state, user: action.payload, isAuthenticated: true, loading: false, error: null }
+    case 'LOGIN_ERROR':
+      return { ...state, user: null, isAuthenticated: false, loading: false, error: action.payload }
+    case 'LOGOUT':
+      return { ...state, user: null, isAuthenticated: false, loading: false, error: null }
+    case 'SET_LOADING':
+      return { ...state, loading: action.payload }
+    case 'CLEAR_ERROR':
+      return { ...state, error: null }
+    default:
+      return state
+  }
+}
 
 export function AuthProvider({ children }) {
-  const auth = useProvideAuth()
-  return <AuthContext.Provider value={auth}>{children}</AuthContext.Provider>
+  const [state, dispatch] = useReducer(authReducer, initialState)
+  const router = useRouter()
+
+  // --- 登入 ---
+  const login = useCallback(async ({ username, password }) => {
+    dispatch({ type: 'SET_LOADING', payload: true })
+    dispatch({ type: 'CLEAR_ERROR' })
+
+    try {
+      const res = await fetch('http://127.0.0.1:8000/api/token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      })
+
+      if (!res.ok) throw new Error('登入失敗，請確認帳號密碼')
+      const { access, refresh } = await res.json()
+
+      localStorage.setItem('accessToken', access)
+      localStorage.setItem('refreshToken', refresh)
+
+      // 可選：打 user info API 來取得詳細資料
+      const user = { username } // 假設只有帳號
+      dispatch({ type: 'LOGIN_SUCCESS', payload: user })
+      return { success: true }
+    } catch (error) {
+      dispatch({ type: 'LOGIN_ERROR', payload: error.message || '登入失敗' })
+      return { success: false, error: error.message }
+    } finally {
+      dispatch({ type: 'SET_LOADING', payload: false })
+    }
+  }, [])
+
+  // --- 註冊 ---
+  const register = useCallback(async (userData) => {
+    dispatch({ type: 'SET_LOADING', payload: true })
+    dispatch({ type: 'CLEAR_ERROR' })
+
+    try {
+      if (!userData.username?.trim()) throw new Error('請輸入使用者帳號')
+      if (!userData.email?.trim()) throw new Error('請輸入電子郵件')
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(userData.email)) throw new Error('電子郵件格式錯誤')
+      if (!userData.password || userData.password.length < 6) throw new Error('密碼至少 6 字元')
+
+      const response = await fetch('http://127.0.0.1:8000/api/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: userData.username,
+          email: userData.email,
+          password: userData.password,
+          first_name: userData.firstName,
+          last_name: userData.lastName,
+          gender: userData.gender,
+          phone: userData.phone
+        })
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.detail || '註冊失敗')
+      }
+
+      const data = await response.json()
+      dispatch({ type: 'LOGIN_SUCCESS', payload: data })
+      return { success: true, user: data }
+    } catch (error) {
+      dispatch({ type: 'LOGIN_ERROR', payload: error.message || '註冊失敗' })
+      return { success: false, error: error.message }
+    } finally {
+      dispatch({ type: 'SET_LOADING', payload: false })
+    }
+  }, [])
+
+  // --- 登出 ---
+  const logout = useCallback(() => {
+    localStorage.removeItem('accessToken')
+    localStorage.removeItem('refreshToken')
+    dispatch({ type: 'LOGOUT' })
+    router.push('/login')
+  }, [router])
+
+  // --- 刷新 Token ---
+  const refreshToken = useCallback(async () => {
+    const refresh = localStorage.getItem('refreshToken')
+    if (!refresh) return logout()
+
+    try {
+      const res = await fetch('http://127.0.0.1:8000/api/token/refresh', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refresh })
+      })
+
+      if (!res.ok) throw new Error('刷新 Token 失敗')
+      const { access } = await res.json()
+      localStorage.setItem('accessToken', access)
+      return true
+    } catch {
+      logout()
+      return false
+    }
+  }, [logout])
+
+  // --- 初始化登入狀態 ---
+  useEffect(() => {
+    const token = localStorage.getItem('accessToken')
+    if (token) {
+      const savedUser = { username: '已登入用戶' }
+      dispatch({ type: 'LOGIN_SUCCESS', payload: savedUser })
+    } else {
+      dispatch({ type: 'SET_LOADING', payload: false })
+    }
+  }, [])
+
+  const contextValue = {
+    user: state.user,
+    isAuthenticated: state.isAuthenticated,
+    loading: state.loading,
+    error: state.error,
+    login,
+    register,
+    logout,
+    refreshToken,
+    clearError: () => dispatch({ type: 'CLEAR_ERROR' }),
+
+    // 額外方便取值
+    userName: state.user?.name || state.user?.username || '',
+    userEmail: state.user?.email || '',
+    isLoggedIn: state.isAuthenticated,
+    hasError: !!state.error,
+    isLoading: state.loading,
+    isAdmin: state.user?.role === 'admin'
+  }
+
+  return <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
 }
 
 export function useAuth() {
   const context = useContext(AuthContext)
   if (!context) throw new Error('useAuth must be used within AuthProvider')
   return context
-}
-
-function useProvideAuth() {
-  const router = useRouter()
-  const [user, setUser] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-
-  const isAuthenticated = Boolean(user)
-
-  const login = useCallback(async ({ username, password }) => {
-    setLoading(true)
-    setError(null)
-    try {
-      const res = await api.post('/token', { username, password })
-      const { access, refresh } = res.data
-      localStorage.setItem('accessToken', access)
-      localStorage.setItem('refreshToken', refresh)
-
-      setUser({ username }) // 你也可改成真實從後端撈的 user 資料
-
-      setLoading(false)
-      return { success: true }
-    } catch (e) {
-      setError('登入失敗，請確認帳號密碼')
-      setUser(null)
-      setLoading(false)
-      return { success: false, error: '登入失敗，請確認帳號密碼' }
-    }
-  }, [])
-
-  const logout = useCallback(() => {
-    localStorage.removeItem('accessToken')
-    localStorage.removeItem('refreshToken')
-    setUser(null)
-    router.push('/login')
-  }, [router])
-
-  const refreshToken = useCallback(async () => {
-    try {
-      const refresh = localStorage.getItem('refreshToken')
-      if (!refresh) throw new Error('沒有 refresh token')
-
-      // 用 api.post會觸發互相攔截，可改用 fetch 或另建 axios 實例呼叫
-      const res = await fetch('http://127.0.0.1:8000/api/token/refresh', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ refresh }),
-      })
-
-      if (!res.ok) throw new Error('刷新Token失敗')
-      const data = await res.json()
-      localStorage.setItem('accessToken', data.access)
-
-      return true
-    } catch (err) {
-      logout()
-      return false
-    }
-  }, [logout])
-
-  // 初始化或刷新時，可從 token 資訊解析用戶或打user info API（此範例省略）
-  useEffect(() => {
-    const token = localStorage.getItem('accessToken')
-    if (token) {
-      setUser({ username: '已登入用戶' })
-    } else {
-      setUser(null)
-    }
-    setLoading(false)
-  }, [])
-
-  return { user, login, logout, refreshToken, isAuthenticated, loading, error }
 }
