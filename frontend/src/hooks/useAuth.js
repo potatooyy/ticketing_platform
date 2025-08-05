@@ -95,7 +95,7 @@ export function AuthProvider({ children }) {
       }
 
       const data = await response.json()
-      dispatch({ type: 'LOGIN_SUCCESS', payload: data })
+      // dispatch({ type: 'LOGIN_SUCCESS', payload: data })
       return { success: true, user: data }
     } catch (error) {
       dispatch({ type: 'LOGIN_ERROR', payload: error.message || '註冊失敗' })
