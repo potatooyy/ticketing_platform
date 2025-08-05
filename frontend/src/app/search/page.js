@@ -50,7 +50,7 @@ export default function SearchPage() {
           <div className="row row-cols-1 row-cols-md-3 g-4 justify-content-center">
             {filteredConcerts.map(concert => (
               <div key={concert.id} className="col d-flex justify-content-center">
-                <ConcertCard concert={concert} onClick={() => router.push(`/booking/${concert.id}`)} />
+                <ConcertCard concert={concert} onClick={() => router.push(`/info/${concert.id}`)} />
               </div>
             ))}
           </div>
