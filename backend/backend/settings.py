@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-y5a3$)0hj+&71#$h^_nxb5zqsir0kr73hlfq950%kvvfe=f24z
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['tk.elmolab.work', 'www.tk.elmolab.work', '127.0.0.1', 'localhost',]
 
 
 # Application definition
@@ -158,4 +158,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
     # 其他允許跨域的前端網址
+    "http://tk.elmolab.work",
+    "https://tk.elmolab.work",
+    # "http://127.0.0.1:8000"
 ]

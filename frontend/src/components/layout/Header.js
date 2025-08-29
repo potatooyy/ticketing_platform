@@ -134,18 +134,20 @@ export default function Header() {
             <div
               className="icon-btn"
               title="管理後台"
-              onClick={() => window.location.href = 'http://127.0.0.1:8000/admin'}
-              onKeyDown={e => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  window.location.href = 'http://127.0.0.1:8000/admin'
-                }
-              }}
               role="button"
               tabIndex={0}
               aria-label="管理後台"
+              onClick={() => window.location.href = process.env.NEXT_PUBLIC_ADMIN_URL || 'http://127.0.0.1:8000/admin'}
+              onKeyDown={e => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  window.location.href = process.env.NEXT_PUBLIC_ADMIN_URL || 'http://127.0.0.1:8000/admin'
+                }
+              }}
             >
               <i className="bi bi-gear" aria-hidden="true"></i>
             </div>
+
 
           <form
             className="header-search"
