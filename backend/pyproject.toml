@@ -13,4 +13,5 @@ dependencies = [
     "drf-yasg>=1.21.10",
     "pillow>=11.3.0",
     "requests>=2.32.4",
+    "uvicorn>=0.35.0",
 ]

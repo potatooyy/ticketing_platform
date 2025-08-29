@@ -1,64 +1,15 @@
 // src/app/search/page.js
 'use client'
-import { useState, useEffect } from 'react'
-import { useSearchParams, useRouter } from 'next/navigation'
-import { concertsData } from '@/data/concerts'
-import ConcertCard from '@/components/concerts/ConcertCard'
+export const dynamic = 'force-dynamic'
+
+import { Suspense } from 'react'
+import SearchContent from './SearchContent'
 
 export default function SearchPage() {
-  const searchParams = useSearchParams()
-  const router = useRouter()
-
-  const keyword = searchParams.get('keyword')?.trim().toLowerCase() || ''
-
-  const [filteredConcerts, setFilteredConcerts] = useState([])
-
-  useEffect(() => {
-    if (!keyword) {
-      setFilteredConcerts([])
-      return
-    }
-
-    // 依 title, artist, date 模糊搜尋（日期可用包含字串搜尋）
-    const filtered = concertsData.filter(concert => {
-      const title = concert.title.toLowerCase()
-      const artist = (concert.artist || '').toLowerCase()
-      const date = String(concert.date).toLowerCase()
-      return (
-        title.includes(keyword) ||
-        artist.includes(keyword) ||
-        date.includes(keyword)
-      )
-    })
-
-    setFilteredConcerts(filtered)
-  }, [keyword])
-
-  // 搜尋無關鍵字時重定向回首頁，可依需求調整
-  useEffect(() => {
-    if (!keyword) {
-      router.push('/')
-    }
-  }, [keyword, router])
-
   return (
-    <>
-      
-      <main className="container-xxl my-5">
-        <h1 className="mb-4 text-center">搜尋結果：「{keyword}」</h1>
-        {filteredConcerts.length > 0 ? (
-          <div className="row row-cols-1 row-cols-md-3 g-4 justify-content-center">
-            {filteredConcerts.map(concert => (
-              <div key={concert.id} className="col d-flex justify-content-center">
-                <ConcertCard concert={concert} onClick={() => router.push(`/info/${concert.id}`)} />
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p className="text-center text-muted fs-5">很抱歉，找不到符合條件的演唱會。</p>
-        )}
-      </main>
-      
-    </>
+    <Suspense fallback={<div className="text-center py-5">載入中…</div>}>
+      <SearchContent />
+    </Suspense>
   )
 }
+

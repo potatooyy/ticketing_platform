@@ -1,0 +1,6 @@
+ignoredBuiltDependencies:
+  - node
+
+onlyBuiltDependencies:
+  - sharp
+  - unrs-resolver
