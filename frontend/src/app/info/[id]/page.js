@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export default function InfoPage({ params }) {
   const { id } = params
@@ -13,7 +14,7 @@ export default function InfoPage({ params }) {
   useEffect(() => {
     async function fetchShow() {
       try {
-        const res = await fetch(`http://127.0.0.1:8000/api/shows/${id}`)
+        const res = await fetch(`${apiBaseUrl}/api/shows/${id}`)
         if (!res.ok) throw new Error('找不到該演出資料')
         const data = await res.json()
         setShow(data)

@@ -1,6 +1,8 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+console.log('API Base URL:', apiBaseUrl);
 
 export default function HomePage() {
   const router = useRouter()
@@ -11,7 +13,7 @@ export default function HomePage() {
   useEffect(() => {
     async function fetchConcerts() {
       try {
-        const res = await fetch('http://127.0.0.1:8000/api/concerts')
+        const res = await fetch(`${apiBaseUrl}/api/concerts`)
         if (!res.ok) throw new Error('網路錯誤')
         const data = await res.json()
         setConcerts(data)
@@ -51,6 +53,9 @@ export default function HomePage() {
             <div className="card-body">
               <div className="title">{concert.title}</div>
               {/* 日期已移除 */}
+              {concert.artist && (
+                <div className="artist text-sm opacity-70">藝人：{concert.artist}</div>
+              )}
             </div>
           </div>
         ))}

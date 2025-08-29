@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import axios from 'axios'
-
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
 export default function TicketsPage() {
   const [tickets, setTickets] = useState([])
   const { user, loading } = useAuth()
@@ -23,7 +23,7 @@ export default function TicketsPage() {
   }
 
   try {
-    const res = await axios.get('http://127.0.0.1:8000/api/user/orders', {
+    const res = await axios.get(`${apiBaseUrl}/api/user/orders`, {
       headers: {
         Authorization: `Bearer ${token}`
       }

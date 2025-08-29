@@ -1,9 +1,10 @@
 // frontend/src/utils/api.js
 import axios from 'axios'
 import { logout as logoutUser, refreshToken as refreshUserToken } from '@/hooks/useAuthHelper' // 後面提供說明
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 const api = axios.create({
-  baseURL: 'http://127.0.0.1:8000/api',
+  baseURL: `${apiBaseUrl}/api`,
   timeout: 10000,
 })
 
