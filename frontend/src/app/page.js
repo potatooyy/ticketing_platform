@@ -125,7 +125,7 @@ export default function HomePage() {
             <div className="card-body">
               <div className="title">{concert.title}</div>
               {/* 舊版留 artist/date 有對應欄位可顯示 */}
-              <div className="date">日期：{concert.date}</div>
+              {/* <div className="date">日期：{concert.date}</div> */}
               {concert.artist && (
                 <div className="artist text-sm opacity-70">藝人：{concert.artist}</div>
               )}

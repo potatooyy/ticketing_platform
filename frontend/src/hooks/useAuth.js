@@ -3,6 +3,7 @@
 import { createContext, useContext, useReducer, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
 // --- 初始化 Context 與 Reducer ---
 const AuthContext = createContext()
 
@@ -40,7 +41,7 @@ export function AuthProvider({ children }) {
     dispatch({ type: 'CLEAR_ERROR' })
 
     try {
-      const res = await fetch('http://127.0.0.1:8000/api/token', {
+      const res = await fetch(`${apiBaseUrl}/api/token`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password })
@@ -75,7 +76,7 @@ export function AuthProvider({ children }) {
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(userData.email)) throw new Error('電子郵件格式錯誤')
       if (!userData.password || userData.password.length < 6) throw new Error('密碼至少 6 字元')
 
-      const response = await fetch('http://127.0.0.1:8000/api/users', {
+      const response = await fetch(`${apiBaseUrl}/api/users`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -119,7 +120,7 @@ export function AuthProvider({ children }) {
     if (!refresh) return logout()
 
     try {
-      const res = await fetch('http://127.0.0.1:8000/api/token/refresh', {
+      const res = await fetch(`${apiBaseUrl}/api/token/refresh`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ refresh })

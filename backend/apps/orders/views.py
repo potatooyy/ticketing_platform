@@ -10,8 +10,8 @@ from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
 
 class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.all()
-    # permission_classes = [IsAuthenticated]
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
+    # permission_classes = [AllowAny]
 
 
     def get_serializer_class(self):
@@ -39,8 +39,8 @@ class OrderViewSet(viewsets.ModelViewSet):
 class UserOrderViewSet(viewsets.ReadOnlyModelViewSet):
     """用戶查看自己的訂單"""
     serializer_class = UserOrderSerializer
-    # permission_classes = [IsAuthenticated]
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
+    # permission_classes = [AllowAny]
     
     def get_queryset(self):
         # 只能看自己的訂單
@@ -54,8 +54,8 @@ class UserOrderViewSet(viewsets.ReadOnlyModelViewSet):
 class AdminOrderViewSet(viewsets.ModelViewSet):  # ModelViewSet 支援 CRUD
     """管理員管理所有訂單"""
     serializer_class = AdminOrderSerializer
-    # permission_classes = [IsAuthenticated, IsAdminUser]
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated, IsAdminUser]
+    # permission_classes = [AllowAny]
 
     def get_queryset(self):
         queryset = Order.objects.select_related('user').prefetch_related(
