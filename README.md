@@ -64,7 +64,12 @@ uv run python manage.py runserver
 ```bash=
 pnpm install # 安裝 frontend 相關套件及依賴
 ```
-2. 啟動前端開發伺服器：
+2. 在 frontend 目錄增加 .env.local 檔案，內容如下：
+```env=
+NEXT_PUBLIC_API_BASE_URL=http://127.0.0.1:8000
+NEXT_PUBLIC_ADMIN_URL=http://127.0.0.1:8000/admin
+```
+3. 啟動前端開發伺服器：
 ```bash=
 pnpm run dev
 ```
